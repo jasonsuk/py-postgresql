@@ -1,5 +1,5 @@
-# Loading controllers from in memory database (in_memory.py)
-from in_memory import add_entry, get_entries
+# Loading controllers from in SQL database (database.py)
+from database import create_table, add_entry, get_entries
 
 # SET global variables to use
 initial_message = '''
@@ -11,9 +11,11 @@ Please select one the following options :
 Your selection: '''
 
 welcome_message = '\nWelcome back to my programming journal 🧑🏻‍💻'
-
+create_table()
 
 # DEFINE helper functions
+
+
 def prompt_inputs():
     # Get inputs
     input_date = input('Enter the date 📆 (i.e. 2021-01-10) : ')
@@ -24,19 +26,13 @@ def prompt_inputs():
 
 
 def view_entries(entries):
+    for entry in entries:
+        # entry = row of 'entries 'table --> tuple
+        print('\n{}\n{}'.format(entry[1], entry[2]))
 
-    if entries:
-        for entry in entries:
-            print('\n{}\n{}\n'.format(entry['date'], entry['contents']))
-
-    else:
-        print('\nNo entry found in the database.\n')
 
 # RUN app
-
-
 print(welcome_message)
-
 
 user_input = input(initial_message)
 while user_input != '3':
@@ -48,7 +44,7 @@ while user_input != '3':
         view_entries(entries)
 
     else:
-        print('\nInvalid option. Please try again.')
+        print('\nInvalid option. Please try again.\n')
 
     user_input = input(initial_message)
 
