@@ -1,13 +1,15 @@
-from database import create_table, add_movie, get_movies, set_movie_watched, get_watched_movies
+from database import create_table, add_movie, get_movies, search_movie, add_user, set_movie_watched, get_watched_movies
 import datetime
 
 menu = '''Please select one of the following options:
-1) Add new movie.
-2) View upcoming movies.
-3) View all movies
-4) Watch a movie
-5) View watched movies.
-6) Exit.
+1) Add new movie
+2) View all movies
+3) View upcoming movies
+4) Search a movie
+5) Add a new user
+6) Watch a movie
+7) View watched movies
+8) Exit
 Your selection: '''
 
 # Print welcome message
@@ -16,6 +18,13 @@ print(welcome_message)
 
 # Controller to create a database if not exists 'movie.db'
 create_table()
+
+# Helper function
+
+
+def convert_timestamp(timestamp):
+    return datetime.datetime.fromtimestamp(timestamp)
+
 
 # Create a function to prompt user inputs for movie
 
@@ -33,48 +42,74 @@ def prompt_inputs():
 
 def print_movies(movies):
 
-    print('Printing  movies...\n')
+    if movies:
+        print('SHOWING MOVIES ====================\n')
 
-    for movie in movies:
-        print(f'Title: {movie[1]}')
-        print(
-            f'Release date: {datetime.datetime.fromtimestamp(movie[2])}')
-        print()
+        for movie in movies:
+            print(f'Title: {movie[1]}')
+            print(
+                f'Release date: {convert_timestamp(movie[2])}\n')
+        print('======\n')
+
+    else:
+        print('\nNo movies found yet...\nAdd a new movie!\n')
 
 
-def print_watched_movies(watcher_name, watched_movies):
+def prompt_search_movies():
+    search_term = input('Enter a movie title: ')
+    searched_movies = search_movie(search_term)
 
-    print(f'\n⬇️ ⬇️ {watcher_name}\'s Watched Movie List ⬇️ ⬇️\n')
+    print(f'\nPrinting movies that match <{search_term}>===\n')
+    if searched_movies:
+        for title, release_date in searched_movies:
 
-    for movie in watched_movies:
-        print(f'    {movie[2]}')
-
-    print('\n')
+            print(f'{title}, {convert_timestamp(release_date)}')
+    else:
+        print(f'No movie found...\n')
 
 
 def prompt_watched():
-    watcher_name = input('Enter the name of the user: ')
-    movie_title_watched = input(
-        'Enter the title of the movie that you watched: ')
-    set_movie_watched(watcher_name, movie_title_watched)
+    watcher_username = input('Enter your username: ')
+    movie_id = input('Enter movie id: ')
+
+    set_movie_watched(watcher_username, movie_id)
+    print(f'User <{watcher_username}>\'s watched movie list updated\n')
+
+
+def prompt_watched_movies():
+    watcher_name = input('Enter your username: ')
+
+    print(f'\n{watcher_name}\'s Watched Movie List ===\n')
+    watched_movies = get_watched_movies(watcher_name)
+    if watched_movies:
+        for title, release_date in watched_movies:
+            print(
+                f'Title: {title} \nRelease date: {convert_timestamp(release_date)}')
+    else:
+        print(f'{watcher_name} has not watched any movie yet...')
+
+    print('======\n')
+
 
     # Get user inputs for menu options
 user_input = int(input(menu))  # original input is STRING
 
-while user_input != 6:
+while user_input != 8:
     if user_input == 1:
         prompt_inputs()
     elif user_input == 2:
-        print_movies(get_movies(upcoming=True))
-    elif user_input == 3:
         print_movies(get_movies(upcoming=False))
+    elif user_input == 3:
+        print_movies(get_movies(upcoming=True))
     elif user_input == 4:
-        prompt_watched()
+        prompt_search_movies()
     elif user_input == 5:
-        watcher_name = input('Enter the name of the user: ')
-        watched_movies = get_watched_movies(watcher_name)
-        print_watched_movies(watcher_name, watched_movies)
-
+        new_user = input('Enter your new username: ')
+        add_user(new_user)
+    elif user_input == 6:
+        prompt_watched()
+    elif user_input == 7:
+        prompt_watched_movies()
     else:
         print('\nInvalid input. Please try again.\n')
 
