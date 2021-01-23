@@ -4,7 +4,6 @@ from psycopg2.errors import DivisionByZero
 from dotenv import load_dotenv
 import database
 
-load_dotenv()
 
 DATABASE_PROMPT = "Enter the DATABASE_URL value or leave empty to load from .env file: "
 MENU_PROMPT = """-- Menu --
