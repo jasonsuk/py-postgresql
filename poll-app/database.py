@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import List, Tuple
 from psycopg2.extras import execute_values
 from models.poll import Poll
@@ -46,83 +47,79 @@ INSERT_VOTE = "INSERT INTO votes (username, option_id) VALUES (%s, %s);"
 
 # -- check / create tables when connected to database --
 
-
-def create_tables(connection):
+@contextmanager
+def get_cursor(connection):
     with connection:
         with connection.cursor() as cursor:
-            cursor.execute(CREATE_POLLS)
-            cursor.execute(CREATE_OPTIONS)
-            cursor.execute(CREATE_VOTES)
+            yield cursor
+
+
+def create_tables(connection):
+    with get_cursor(connection) as cursor:
+        cursor.execute(CREATE_POLLS)
+        cursor.execute(CREATE_OPTIONS)
+        cursor.execute(CREATE_VOTES)
 
 # -- polls --
 
 
 def create_poll(connection, title, owner):
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute(INSERT_POLL_RETURN_ID, (title, owner))
-            poll_id = cursor.fetchone()[0]  # first col of first row
-            return poll_id
+    with get_cursor(connection) as cursor:
+        cursor.execute(INSERT_POLL_RETURN_ID, (title, owner))
+        poll_id = cursor.fetchone()[0]  # first col of first row
+        return poll_id
 
 
 def get_polls(connection) -> List[Poll]:
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute(SELECT_ALL_POLLS)
-            return cursor.fetchall()
+    with get_cursor(connection) as cursor:
+        cursor.execute(SELECT_ALL_POLLS)
+        return cursor.fetchall()
 
 
 def get_poll(connection, poll_id) -> Poll:
-    with connection:
-        with connection.cursor as cursor:
-            cursor.execute(SELECT_POLL, (poll_id, ))
-            return cursor.fetchone()
+    with get_cursor(connection) as cursor:
+        cursor.execute(SELECT_POLL, (poll_id, ))
+        return cursor.fetchone()
 
 
 def get_latest_poll(connection) -> Poll:
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute(SELECT_LATEST_POLL)
-            return cursor.fetchone()
+    with get_cursor(connection) as cursor:
+        cursor.execute(SELECT_LATEST_POLL)
+        return cursor.fetchone()
 
 
 def get_poll_options(connection, poll_id) -> Option:
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute(SELECT_POLL_OPTIONS, (poll_id,))
-            return cursor.fetchall()
+    with get_cursor(connection) as cursor:
+        cursor.execute(SELECT_POLL_OPTIONS, (poll_id,))
+        return cursor.fetchall()
 
 
 # -- options --
 
 
 def add_option(connection, option_text: str, poll_id: int) -> Option:
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute(INSERT_OPTION, (option_text, poll_id))
-            return cursor.fetchone()
+    with get_cursor(connection) as cursor:
+        cursor.execute(INSERT_OPTION, (option_text, poll_id))
+        return cursor.fetchone()
 
 
 def get_option(connection, option_id: int) -> Option:
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute(SELECT_OPTION, (option_id,))
-            return cursor.fetchone()
+    with get_cursor(connection) as cursor:
+        cursor.execute(SELECT_OPTION, (option_id,))
+        return cursor.fetchone()
 
 
 # -- votes --
 
 def get_votes_for_option(connection, option_id: int) -> List[Vote]:
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute(SELECT_VOTES_FOR_OPTION, (option_id,))
-            return cursor.fetchall()
+    with get_cursor(connection) as cursor:
+        cursor.execute(SELECT_VOTES_FOR_OPTION, (option_id,))
+        return cursor.fetchall()
 
 
 def add_poll_vote(connection, username: str, option_id: int) :
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute(INSERT_VOTE, (username, option_id))
+    with get_cursor(connection) as cursor:
+        cursor.execute(INSERT_VOTE, (username, option_id))
 
 
 # def get_random_poll_vote(connection, option_id: int) -> Vote:

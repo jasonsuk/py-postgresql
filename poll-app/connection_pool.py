@@ -2,6 +2,7 @@
 # Later need connection pooling process
 
 import os
+from contextlib import contextmanager
 # import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 from dotenv import load_dotenv
@@ -21,3 +22,15 @@ if not database_uri:
 
 # Create a single-threaded pool
 pool = SimpleConnectionPool(minconn=1, maxconn=10, dsn=database_uri) # dsn pass onto psycopg2.connect({**kwargs})
+
+
+@contextmanager
+def get_connection():
+    connection = pool.getconn()
+
+    try:
+        yield connection
+    finally:
+        pool.putconn()
+
+

@@ -1,7 +1,7 @@
 from typing import List
 import psycopg2
 from psycopg2.errors import DivisionByZero
-from connections import pool
+from connection_pool import get_connection
 import database
 from models.poll import Poll
 from models.option import Option
@@ -88,9 +88,8 @@ MENU_OPTIONS = {
 
 
 def menu():
-    connection = pool.getconn()
-    database.create_tables(connection)
-    pool.putconn()
+    with get_connection() as connection:
+        database.create_tables(connection)
 
     while (selection := input(MENU_PROMPT)) != "6":
         try:
