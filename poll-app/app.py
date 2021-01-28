@@ -1,12 +1,12 @@
 from typing import List
 import psycopg2
 from psycopg2.errors import DivisionByZero
-from connections import create_connection
+from connections import pool
 import database
 from models.poll import Poll
 from models.option import Option
+import random
 
-DATABASE_PROMPT = "Enter the DATABASE_URL value or leave empty to load from .env file: "
 MENU_PROMPT = """-- Menu --
 
 1) Create new poll
@@ -88,8 +88,9 @@ MENU_OPTIONS = {
 
 
 def menu():
-    connection = create_connection()
+    connection = pool.getconn()
     database.create_tables(connection)
+    pool.putconn()
 
     while (selection := input(MENU_PROMPT)) != "6":
         try:
